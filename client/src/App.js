@@ -7,16 +7,20 @@ import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { withStyles } from '@material-ui/core/styles';
+import CirculaProgress from '@material-ui/core/CircularProgress';
 import './App.css';
 
 const styles = theme => ({
   root: {
-    width: '100px',
-    marginTop: theme.spacing.unit * 3,
-    overfolwX: "auto"
+    width: '1000px',
+    marginTop: theme.spacing(3),
+    overflowX: "auto"
   },
   table: {
     minWidth: 1080
+  },
+  progress: {
+    margin: theme.spacing(2)
   }
 })
 
@@ -25,10 +29,12 @@ const styles = theme => ({
 class App extends React.Component {
 
   state = {
-    customers: ""
+    customers: "",
+    completed: 0
   }
 
   componentDidMount() {
+    this.timer = setInterval(this.progress, 20);
     this.callApi()
       .then(res => this.setState({ customers: res }))
       .catch(err => console.log(err));
@@ -38,6 +44,11 @@ class App extends React.Component {
     const response = await fetch('/api/customers');
     const body = await response.json();
     return body;
+  }
+
+  progress = () => {
+    const { completed } = this.state;
+    this.setState({ completed: completed >= 100 ? 0 : completed + 1 });
   }
 
   render() {
@@ -60,7 +71,12 @@ class App extends React.Component {
               this.state.customers ? this.state.customers.map(c => {
                 return (<Customer key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job} />)
               })
-                : ""
+                :
+                <TableRow>
+                  <TableCell colSpan="6" align="center">
+                    <CirculaProgress className={classes.progress} variant="determinate" value={this.state.completed} />
+                  </TableCell>
+                </TableRow>
             }
           </TableBody>
         </Table>
